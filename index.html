@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hang Planner</title>
+  <title>Hangout Planner</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{background:#0f0f0f;color:#e8e4dc;font-family:'Courier New',monospace;min-height:100vh;padding:2rem 1rem 4rem}
@@ -17,15 +17,14 @@
     .num{width:1.5rem;height:1.5rem;background:#e8a24a;color:#0f0f0f;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;flex-shrink:0}
     label{display:block;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;margin-bottom:0.3rem;margin-top:0.85rem}
     label:first-of-type{margin-top:0}
-    input,select,textarea{width:100%;padding:0.5rem 0.75rem;background:#111;border:1px solid #2e2e2e;border-radius:4px;color:#e8e4dc;font-family:'Courier New',monospace;font-size:0.85rem;outline:none}
+    input,select{width:100%;padding:0.5rem 0.75rem;background:#111;border:1px solid #2e2e2e;border-radius:4px;color:#e8e4dc;font-family:'Courier New',monospace;font-size:0.85rem;outline:none}
     input:focus,select:focus{border-color:#e8a24a}
     select option{background:#181818}
     .slot-row{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:0.5rem;align-items:end;margin-bottom:0.55rem}
     .btn{padding:0.5rem 1rem;border:1px solid #444;border-radius:4px;background:transparent;color:#e8e4dc;font-family:'Courier New',monospace;font-size:0.8rem;cursor:pointer;white-space:nowrap}
-    .btn:active{opacity:0.7}
     .btn-gold{background:#e8a24a;border-color:#e8a24a;color:#0f0f0f;font-weight:700}
     .btn-full{width:100%;padding:0.8rem;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;border:1px solid #e8a24a;border-radius:4px;background:#e8a24a;color:#0f0f0f;font-family:'Courier New',monospace;cursor:pointer;font-weight:700}
-    .btn-gray-full{width:100%;padding:0.8rem;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;border:1px solid #444;border-radius:4px;background:transparent;color:#aaa;font-family:'Courier New',monospace;cursor:pointer}
+    .btn-gray-full{width:100%;padding:0.8rem;font-size:0.85rem;border:1px solid #444;border-radius:4px;background:transparent;color:#aaa;font-family:'Courier New',monospace;cursor:pointer}
     .btn-sm{padding:0.3rem 0.6rem;border:1px solid #333;border-radius:3px;background:transparent;color:#777;font-family:'Courier New',monospace;font-size:0.72rem;cursor:pointer}
     .hint{font-size:0.72rem;color:#555;line-height:1.55;margin-top:0.3rem}
     .divider{height:1px;background:#222;margin:1.1rem 0}
@@ -44,37 +43,35 @@
     .slot-opt.selected .slot-chk{background:#e8a24a;border-color:#e8a24a;color:#0f0f0f}
     .slot-date{font-size:0.92rem;color:#e8e4dc}
     .slot-time{font-size:0.75rem;color:#666;margin-top:0.12rem}
-    .bar-wrap{background:#141414;border:1px solid #2a2a2a;border-radius:5px;padding:0.8rem 1rem;margin-bottom:0.65rem}
-    .bar-top{display:flex;justify-content:space-between;align-items:baseline;font-size:0.88rem;color:#e8e4dc}
-    .bar-time{font-size:0.75rem;color:#666}
-    .bar-bg{height:5px;background:#222;border-radius:3px;overflow:hidden;margin:0.45rem 0 0.3rem}
-    .bar-fill{height:100%;background:#e8a24a;border-radius:3px;transition:width 0.4s}
-    .bar-voters{font-size:0.7rem;color:#555}
-    .win-badge{display:inline-block;background:#e8a24a;color:#0f0f0f;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.12rem 0.4rem;border-radius:2px;margin-left:0.45rem}
+    .success-box{background:#0d2b12;border:1px solid #2d6335;border-radius:5px;padding:1.2rem 1.4rem;text-align:center}
+    .success-box h3{font-family:Georgia,serif;color:#5bba6f;font-size:1.1rem;margin-bottom:0.4rem}
+    .success-box p{font-size:0.8rem;color:#888;line-height:1.6}
+    .error-box{background:#2b0d0d;border:1px solid #633;border-radius:5px;padding:0.8rem 1rem;font-size:0.8rem;color:#e07070;margin-top:0.6rem}
+    .spinner{display:inline-block;width:1rem;height:1rem;border:2px solid #333;border-top-color:#e8a24a;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:0.4rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.6)}
+    a{text-decoration:none}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem}
     .grid3{display:grid;grid-template-columns:1fr 1fr auto;gap:0.5rem;align-items:end}
-    .hidden{display:none}
-    a{text-decoration:none}
-    input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.6)}
   </style>
 </head>
 <body>
 <div class="app" id="app"></div>
-
 <script>
-// ── Helpers ──────────────────────────────────────────────────────────────────
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbwTsq_gQLXtVlZPJaajfk9bScQscfq8fXeok2li5UME1uLFinmgpO7RjQ4UPiC3a2bE/exec";
+
 const DAYS   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 function fmtTime(t){
   if(!t) return "";
-  const [h,m] = t.split(":").map(Number);
-  const ampm = h>=12?"pm":"am", hr=h%12||12;
+  const [h,m]=t.split(":").map(Number);
+  const ampm=h>=12?"pm":"am",hr=h%12||12;
   return m===0?`${hr}${ampm}`:`${hr}:${String(m).padStart(2,"0")}${ampm}`;
 }
 function fmtDate(s){
   if(!s) return "";
-  const d = new Date(s+"T12:00:00");
+  const d=new Date(s+"T12:00:00");
   return `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`;
 }
 function todayStr(){ return new Date().toISOString().split("T")[0]; }
@@ -82,42 +79,37 @@ function uid(){ return Math.random().toString(36).slice(2,8); }
 function encodeEvent(ev){ try{return btoa(unescape(encodeURIComponent(JSON.stringify(ev))))}catch{return""} }
 function decodeEvent(s){ try{return JSON.parse(decodeURIComponent(escape(atob(s))))}catch{return null} }
 function qs(sel){ return document.querySelector(sel); }
-function render(html){ qs("#app").innerHTML = html; }
+function render(html){ qs("#app").innerHTML=html; }
 
-// ── State ────────────────────────────────────────────────────────────────────
-let state = {
-  slots: [
-    {id:uid(), date:todayStr(), start:"18:00", end:"20:00"},
-    {id:uid(), date:todayStr(), start:"20:00", end:"22:00"}
+let state={
+  slots:[
+    {id:uid(),date:todayStr(),start:"18:00",end:"20:00"},
+    {id:uid(),date:todayStr(),start:"20:00",end:"22:00"}
   ],
-  invitees: [],
-  selected: [],
-  pollData: null,
-  responses: []
+  invitees:[],
+  selected:[],
+  pollData:null
 };
 
-// ── Router ───────────────────────────────────────────────────────────────────
 function route(){
-  const hash = window.location.hash;
+  const hash=window.location.hash;
   if(hash.startsWith("#poll=")){
-    const decoded = decodeEvent(hash.slice(6));
-    if(decoded){ state.pollData = decoded; showPoll(); return; }
+    const decoded=decodeEvent(hash.slice(6));
+    if(decoded){state.pollData=decoded;showPoll();return;}
   }
   showCreate();
 }
 
-// ── CREATE VIEW ───────────────────────────────────────────────────────────────
 function showCreate(){
   render(`
     <div class="logo">
-      <h1>Hang <em>Planner</em></h1>
+      <h1>Hangout <em>Planner</em></h1>
       <p>No accounts · No subscriptions</p>
     </div>
-
     <div class="card">
       <div class="card-title"><span class="num">1</span> Event details</div>
       <label>Event name</label>
-      <input id="ev-name" type="text" placeholder="e.g. Friday game night" />
+      <input id="ev-name" type="text" placeholder="e.g. Friday game night"/>
       <label>Format</label>
       <select id="ev-type">
         <option value="virtual">Virtual</option>
@@ -125,31 +117,28 @@ function showCreate(){
         <option value="either">Either works</option>
       </select>
       <label>Notes (optional)</label>
-      <input id="ev-notes" type="text" placeholder="e.g. Zoom, ~2 hrs" />
+      <input id="ev-notes" type="text" placeholder="e.g. Zoom, ~2 hrs"/>
     </div>
-
     <div class="card">
       <div class="card-title"><span class="num">2</span> Time options</div>
       <div id="slots-list"></div>
       <button class="btn-sm" onclick="addSlot()">+ Add slot</button>
     </div>
-
     <div class="card">
       <div class="card-title"><span class="num">3</span> Your info &amp; invitees</div>
       <div class="grid2">
-        <div><label>Your name</label><input id="organizer" type="text" placeholder="Your name" /></div>
-        <div><label>Your email (optional)</label><input id="org-email" type="text" placeholder="for reply-to" /></div>
+        <div><label>Your name</label><input id="organizer" type="text" placeholder="Your name"/></div>
+        <div><label>Your email (optional)</label><input id="org-email" type="text" placeholder="for reply-to"/></div>
       </div>
       <div class="divider"></div>
       <p class="hint">Add friends to pre-fill your invite messages.</p>
       <div class="grid3" style="margin-top:0.7rem">
-        <div><label>Name</label><input id="inv-name" type="text" placeholder="Friend's name" /></div>
-        <div><label>Email / phone</label><input id="inv-email" type="text" placeholder="optional" /></div>
+        <div><label>Name</label><input id="inv-name" type="text" placeholder="Friend's name"/></div>
+        <div><label>Email / phone</label><input id="inv-email" type="text" placeholder="optional"/></div>
         <div style="display:flex;align-items:flex-end"><button class="btn btn-gold" onclick="addInvitee()">Add</button></div>
       </div>
       <div class="tag-wrap" id="invitees-list"></div>
     </div>
-
     <div class="card">
       <button class="btn-full" onclick="generateEvent()">Generate shareable link →</button>
     </div>
@@ -159,50 +148,31 @@ function showCreate(){
 }
 
 function renderSlots(){
-  const el = qs("#slots-list");
+  const el=qs("#slots-list");
   if(!el) return;
-  el.innerHTML = state.slots.map((s,i)=>`
+  el.innerHTML=state.slots.map((s,i)=>`
     <div class="slot-row">
-      <div>
-        ${i===0?'<label>Date</label>':''}
-        <input type="date" value="${s.date}" onchange="updSlot('${s.id}','date',this.value)" />
-      </div>
-      <div>
-        ${i===0?'<label>Start</label>':''}
-        <input type="time" value="${s.start}" onchange="updSlot('${s.id}','start',this.value)" />
-      </div>
-      <div>
-        ${i===0?'<label>End</label>':''}
-        <input type="time" value="${s.end}" onchange="updSlot('${s.id}','end',this.value)" />
-      </div>
-      <div style="display:flex;align-items:flex-end">
-        <button class="btn-sm" onclick="removeSlot('${s.id}')">✕</button>
-      </div>
+      <div>${i===0?'<label>Date</label>':''}<input type="date" value="${s.date}" onchange="updSlot('${s.id}','date',this.value)"/></div>
+      <div>${i===0?'<label>Start</label>':''}<input type="time" value="${s.start}" onchange="updSlot('${s.id}','start',this.value)"/></div>
+      <div>${i===0?'<label>End</label>':''}<input type="time" value="${s.end}" onchange="updSlot('${s.id}','end',this.value)"/></div>
+      <div style="display:flex;align-items:flex-end"><button class="btn-sm" onclick="removeSlot('${s.id}')">✕</button></div>
     </div>
   `).join("");
 }
 
 function renderInvitees(){
-  const el = qs("#invitees-list");
+  const el=qs("#invitees-list");
   if(!el) return;
-  el.innerHTML = state.invitees.map(inv=>`
+  el.innerHTML=state.invitees.map(inv=>`
     <span class="tag">${inv.name}${inv.email?` · ${inv.email}`:""}
       <button onclick="removeInvitee('${inv.id}')">×</button>
     </span>
   `).join("");
 }
 
-function addSlot(){
-  state.slots.push({id:uid(), date:todayStr(), start:"18:00", end:"20:00"});
-  renderSlots();
-}
-function updSlot(id,field,val){
-  state.slots = state.slots.map(s=>s.id===id?{...s,[field]:val}:s);
-}
-function removeSlot(id){
-  state.slots = state.slots.filter(s=>s.id!==id);
-  renderSlots();
-}
+function addSlot(){ state.slots.push({id:uid(),date:todayStr(),start:"18:00",end:"20:00"}); renderSlots(); }
+function updSlot(id,f,v){ state.slots=state.slots.map(s=>s.id===id?{...s,[f]:v}:s); }
+function removeSlot(id){ state.slots=state.slots.filter(s=>s.id!==id); renderSlots(); }
 function addInvitee(){
   const n=(qs("#inv-name")||{}).value?.trim();
   const e=(qs("#inv-email")||{}).value?.trim()||"";
@@ -212,47 +182,38 @@ function addInvitee(){
   if(qs("#inv-email")) qs("#inv-email").value="";
   renderInvitees();
 }
-function removeInvitee(id){
-  state.invitees = state.invitees.filter(i=>i.id!==id);
-  renderInvitees();
-}
+function removeInvitee(id){ state.invitees=state.invitees.filter(i=>i.id!==id); renderInvitees(); }
 
 function generateEvent(){
-  const name = (qs("#ev-name")||{}).value?.trim();
-  if(!name){ alert("Please enter an event name."); return; }
-  if(!state.slots.length){ alert("Add at least one time slot."); return; }
-  const ev = {
-    id: uid(),
-    name,
-    type: (qs("#ev-type")||{}).value||"virtual",
-    notes: (qs("#ev-notes")||{}).value?.trim()||"",
-    organizer: (qs("#organizer")||{}).value?.trim()||"",
-    orgEmail: (qs("#org-email")||{}).value?.trim()||"",
-    slots: state.slots,
-    invitees: state.invitees,
-    responses: []
+  const name=(qs("#ev-name")||{}).value?.trim();
+  if(!name){alert("Please enter an event name.");return;}
+  if(!state.slots.length){alert("Add at least one time slot.");return;}
+  const ev={
+    id:uid(), name,
+    type:(qs("#ev-type")||{}).value||"virtual",
+    notes:(qs("#ev-notes")||{}).value?.trim()||"",
+    organizer:(qs("#organizer")||{}).value?.trim()||"",
+    orgEmail:(qs("#org-email")||{}).value?.trim()||"",
+    slots:state.slots, invitees:state.invitees, responses:[]
   };
   showShare(ev);
 }
 
-// ── SHARE VIEW ────────────────────────────────────────────────────────────────
 function showShare(ev){
-  const encoded  = encodeEvent(ev);
-  const base     = window.location.href.split("#")[0];
-  const pollUrl  = `${base}#poll=${encoded}`;
-  const typeLabel= {virtual:"virtual","in-person":"in-person",either:"virtual or in-person"}[ev.type]||"virtual";
-  const from     = ev.organizer||"Me";
-
-  const smsMsg = `Hey! ${from} is planning a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""}.\n\nVote for your available times (30 sec, no account needed):\n${pollUrl}`;
-  const emailSubject = `When works for you? – ${ev.name}`;
-  const emailBody = `Hi${ev.invitees.length>0?" "+ev.invitees.map(i=>i.name).join(", "):""},\n\nI'm organizing a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""} and want to find a time that works for everyone.\n\nClick below to vote — takes 30 seconds, no account needed:\n\n${pollUrl}\n\nThanks!\n${from}${ev.orgEmail?"\n"+ev.orgEmail:""}`;
-  const emailAddresses = ev.invitees.map(i=>i.email).filter(Boolean).join(",");
-  const mailtoLink = `mailto:${emailAddresses}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-  const smsLink    = `sms:?&body=${encodeURIComponent(smsMsg)}`;
+  const encoded=encodeEvent(ev);
+  const base=window.location.href.split("#")[0];
+  const pollUrl=`${base}#poll=${encoded}`;
+  const typeLabel={virtual:"virtual","in-person":"in-person",either:"virtual or in-person"}[ev.type]||"virtual";
+  const from=ev.organizer||"Me";
+  const smsMsg=`Hey! ${from} is planning a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""}.\n\nVote for your available times (30 sec, no account needed):\n${pollUrl}`;
+  const emailSubject=`When works for you? – ${ev.name}`;
+  const emailBody=`Hi${ev.invitees.length>0?" "+ev.invitees.map(i=>i.name).join(", "):""},\n\nI'm organizing a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""} and want to find a time that works for everyone.\n\nClick below to vote — takes 30 seconds, no account needed:\n\n${pollUrl}\n\nThanks!\n${from}${ev.orgEmail?"\n"+ev.orgEmail:""}`;
+  const emailAddresses=ev.invitees.map(i=>i.email).filter(Boolean).join(",");
+  const mailtoLink=`mailto:${emailAddresses}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+  const smsLink=`sms:?&body=${encodeURIComponent(smsMsg)}`;
 
   render(`
-    <div class="logo"><h1>Hang <em>Planner</em></h1></div>
-
+    <div class="logo"><h1>Hangout <em>Planner</em></h1></div>
     <div class="card">
       <div class="card-title">🔗 Your poll link</div>
       <p class="hint" style="margin-bottom:0.6rem">Share this with your group. Anyone who opens it can vote — no account needed.</p>
@@ -262,7 +223,6 @@ function showShare(ev){
         <span id="cp-link" style="font-size:0.78rem;color:#5bba6f;display:none">✓ Copied!</span>
       </div>
     </div>
-
     <div class="card">
       <div class="card-title">💬 Text message</div>
       <p class="hint" style="margin-bottom:0.6rem">Paste into your group chat or send individually.</p>
@@ -273,7 +233,6 @@ function showShare(ev){
         <span id="cp-sms" style="font-size:0.78rem;color:#5bba6f;display:none">✓ Copied!</span>
       </div>
     </div>
-
     <div class="card">
       <div class="card-title">✉️ Email</div>
       <p class="hint" style="margin-bottom:0.6rem">${emailAddresses?`Pre-addressed to: ${ev.invitees.filter(i=>i.email).map(i=>i.name).join(", ")}`:"No emails added — copy below or go back to add friends."}</p>
@@ -284,121 +243,101 @@ function showShare(ev){
         <span id="cp-email" style="font-size:0.78rem;color:#5bba6f;display:none">✓ Copied!</span>
       </div>
     </div>
-
     <div class="card">
       <button class="btn-gray-full" onclick="showCreate()">← Edit event</button>
     </div>
   `);
 }
 
-function copyText(srcId, confirmId){
-  const text = (qs("#"+srcId)||{}).innerText||"";
+function copyText(srcId,confirmId){
+  const text=(qs("#"+srcId)||{}).innerText||"";
   navigator.clipboard.writeText(text).catch(()=>{});
-  const el = qs("#"+confirmId);
-  if(el){ el.style.display="inline"; setTimeout(()=>el.style.display="none",2500); }
+  const el=qs("#"+confirmId);
+  if(el){el.style.display="inline";setTimeout(()=>el.style.display="none",2500);}
 }
 
-// ── POLL VIEW ─────────────────────────────────────────────────────────────────
 function showPoll(){
-  const pd = state.pollData;
+  const pd=state.pollData;
   if(!pd) return;
-  const existing = pd.responses||[];
+  state.selected=[];
   render(`
     <div class="poll-header">
       <h2>${pd.name}</h2>
       <p>${pd.organizer?`Organized by ${pd.organizer} · `:""}${({virtual:"Virtual","in-person":"In person",either:"Virtual or in-person"}[pd.type])||""}${pd.notes?` · ${pd.notes}`:""}</p>
-      ${existing.length>0?`<p style="color:#555;font-size:0.74rem;margin-top:0.35rem">${existing.length} ${existing.length===1?"person has":"people have"} responded</p>`:""}
     </div>
-
     <div class="card">
       <div class="card-title">Which times work for you?</div>
-      ${pd.slots.map(s=>{
-        const vc = existing.filter(r=>r.slots.includes(s.id)).length;
-        return `
-          <div class="slot-opt" id="opt-${s.id}" onclick="toggleSlot('${s.id}')">
-            <div class="slot-chk" id="chk-${s.id}"></div>
-            <div style="flex:1">
-              <div class="slot-date">${fmtDate(s.date)}</div>
-              <div class="slot-time">${fmtTime(s.start)} – ${fmtTime(s.end)}</div>
-            </div>
-            ${vc>0?`<div style="font-size:0.7rem;color:#555">${vc} ✓</div>`:""}
-          </div>`;
-      }).join("")}
-    </div>
-
-    <div class="card">
-      <label>Your name</label>
-      <input id="resp-name" type="text" placeholder="Enter your name" />
-      <div style="margin-top:1rem">
-        <button class="btn-full" id="submit-btn" onclick="submitPoll()">Submit availability →</button>
-      </div>
-    </div>
-  `);
-  state.selected = [];
-}
-
-function toggleSlot(id){
-  const idx = state.selected.indexOf(id);
-  if(idx>-1) state.selected.splice(idx,1);
-  else state.selected.push(id);
-  const opt = qs("#opt-"+id);
-  const chk = qs("#chk-"+id);
-  if(opt) opt.classList.toggle("selected", state.selected.includes(id));
-  if(chk) chk.textContent = state.selected.includes(id)?"✓":"";
-}
-
-function submitPoll(){
-  const name = (qs("#resp-name")||{}).value?.trim();
-  if(!name){ alert("Please enter your name."); return; }
-  if(!state.selected.length){ alert("Select at least one time."); return; }
-  const btn = qs("#submit-btn");
-  if(btn){ btn.textContent="✓ Submitted!"; btn.style.opacity="0.7"; btn.disabled=true; }
-  const updated = {
-    ...state.pollData,
-    responses:[...(state.pollData.responses||[]),{name, slots:[...state.selected]}]
-  };
-  state.pollData = updated;
-  setTimeout(()=>showResults(), 700);
-}
-
-// ── RESULTS VIEW ──────────────────────────────────────────────────────────────
-function showResults(){
-  const pd = state.pollData;
-  const responses = pd.responses||[];
-  const total = responses.length;
-  const scored = [...pd.slots].map(s=>{
-    const voters = responses.filter(r=>r.slots.includes(s.id)).map(r=>r.name);
-    return {...s, voters, count:voters.length};
-  }).sort((a,b)=>b.count-a.count);
-  const max = scored[0]?.count||0;
-
-  render(`
-    <div class="poll-header">
-      <h2>${pd.name}</h2>
-      <p>${total} ${total===1?"response":"responses"} so far</p>
-    </div>
-    <div class="card">
-      <div class="card-title">Results</div>
-      ${scored.map(s=>`
-        <div class="bar-wrap">
-          <div class="bar-top">
-            <span><strong>${fmtDate(s.date)}</strong>${s.count===max&&max>0?'<span class="win-badge">best</span>':""}</span>
-            <span class="bar-time">${fmtTime(s.start)} – ${fmtTime(s.end)}</span>
+      ${pd.slots.map(s=>`
+        <div class="slot-opt" id="opt-${s.id}" onclick="toggleSlot('${s.id}')">
+          <div class="slot-chk" id="chk-${s.id}"></div>
+          <div style="flex:1">
+            <div class="slot-date">${fmtDate(s.date)}</div>
+            <div class="slot-time">${fmtTime(s.start)} – ${fmtTime(s.end)}</div>
           </div>
-          <div class="bar-bg"><div class="bar-fill" style="width:${total>0?(s.count/total)*100:0}%"></div></div>
-          <div class="bar-voters">${s.count} / ${total} available${s.voters.length>0?" · "+s.voters.join(", "):""}</div>
         </div>
       `).join("")}
     </div>
     <div class="card">
-      <button class="btn-gray-full" onclick="showPoll()">← Back to poll</button>
+      <label>Your name</label>
+      <input id="resp-name" type="text" placeholder="Enter your name"/>
+      <div style="margin-top:1rem">
+        <button class="btn-full" id="submit-btn" onclick="submitPoll()">Submit availability →</button>
+      </div>
+      <div id="submit-error"></div>
     </div>
   `);
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
+function toggleSlot(id){
+  const idx=state.selected.indexOf(id);
+  if(idx>-1) state.selected.splice(idx,1);
+  else state.selected.push(id);
+  const opt=qs("#opt-"+id),chk=qs("#chk-"+id);
+  if(opt) opt.classList.toggle("selected",state.selected.includes(id));
+  if(chk) chk.textContent=state.selected.includes(id)?"✓":"";
+}
+
+async function submitPoll(){
+  const pd=state.pollData;
+  const name=(qs("#resp-name")||{}).value?.trim();
+  if(!name){alert("Please enter your name.");return;}
+  if(!state.selected.length){alert("Select at least one time.");return;}
+  const btn=qs("#submit-btn");
+  if(btn){btn.innerHTML='<span class="spinner"></span>Saving…';btn.disabled=true;}
+  const slotLabels=state.selected.map(id=>{
+    const s=pd.slots.find(sl=>sl.id===id);
+    return s?`${fmtDate(s.date)} ${fmtTime(s.start)}–${fmtTime(s.end)}`:id;
+  });
+  try{
+    await fetch(SHEET_URL,{
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({name,event:pd.name,slots:slotLabels})
+    });
+    showSuccess(name,slotLabels,pd.name);
+  }catch(err){
+    const errEl=qs("#submit-error");
+    if(errEl) errEl.innerHTML=`<div class="error-box">Something went wrong — please try again.</div>`;
+    if(btn){btn.innerHTML="Submit availability →";btn.disabled=false;}
+  }
+}
+
+function showSuccess(name,slotLabels,eventName){
+  render(`
+    <div class="logo"><h1>Hangout <em>Planner</em></h1></div>
+    <div class="card">
+      <div class="success-box">
+        <h3>✓ You're in!</h3>
+        <p>Thanks <strong>${name}</strong> — your availability for <strong>${eventName}</strong> has been recorded.</p>
+        <p style="margin-top:0.6rem">Your picks:<br/>${slotLabels.map(l=>`<strong>${l}</strong>`).join("<br/>")}</p>
+      </div>
+      <p class="hint" style="margin-top:1rem;text-align:center">The organizer will follow up once they find the best time for everyone.</p>
+    </div>
+  `);
+}
+
 route();
 </script>
 </body>
 </html>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
