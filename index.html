@@ -6,50 +6,53 @@
   <title>Hangout Planner</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{background:#0f0f0f;color:#e8e4dc;font-family:'Courier New',monospace;min-height:100vh;padding:2rem 1rem 4rem}
+    body{background:#0f0f0f;color:#f0ebe0;font-family:'Courier New',monospace;min-height:100vh;padding:2rem 1rem 4rem}
     .app{max-width:620px;margin:0 auto}
     .logo{text-align:center;margin-bottom:2.5rem}
-    .logo h1{font-family:Georgia,serif;font-size:clamp(2rem,8vw,3.2rem);font-weight:700;color:#f0ebe0}
-    .logo h1 em{font-style:italic;font-weight:400;color:#e8a24a}
-    .logo p{font-size:0.68rem;letter-spacing:0.18em;text-transform:uppercase;color:#555;margin-top:0.25rem}
-    .card{background:#181818;border:1px solid #2a2a2a;border-radius:6px;padding:1.5rem 1.6rem;margin-bottom:1.1rem}
-    .card-title{font-family:Georgia,serif;font-size:1.05rem;color:#f0ebe0;margin-bottom:1.1rem;display:flex;align-items:center;gap:0.55rem}
-    .num{width:1.5rem;height:1.5rem;background:#e8a24a;color:#0f0f0f;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;flex-shrink:0}
-    label{display:block;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;margin-bottom:0.3rem;margin-top:0.85rem}
+    .logo h1{font-family:Georgia,serif;font-size:clamp(2rem,8vw,3.2rem);font-weight:700;color:#ffffff}
+    .logo h1 em{font-style:italic;font-weight:400;color:#f5b358}
+    .logo p{font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;color:#a8a39a;margin-top:0.35rem}
+    .card{background:#181818;border:1px solid #333333;border-radius:6px;padding:1.5rem 1.6rem;margin-bottom:1.1rem}
+    .card-title{font-family:Georgia,serif;font-size:1.1rem;color:#ffffff;margin-bottom:1.1rem;display:flex;align-items:center;gap:0.55rem}
+    .num{width:1.5rem;height:1.5rem;background:#f5b358;color:#0f0f0f;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0}
+    label{display:block;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:#b8b4ac;margin-bottom:0.35rem;margin-top:0.85rem;font-weight:600}
     label:first-of-type{margin-top:0}
-    input,select{width:100%;padding:0.5rem 0.75rem;background:#111;border:1px solid #2e2e2e;border-radius:4px;color:#e8e4dc;font-family:'Courier New',monospace;font-size:0.85rem;outline:none}
-    input:focus,select:focus{border-color:#e8a24a}
-    select option{background:#181818}
-    .slot-row{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:0.5rem;align-items:end;margin-bottom:0.55rem}
-    .btn{padding:0.5rem 1rem;border:1px solid #444;border-radius:4px;background:transparent;color:#e8e4dc;font-family:'Courier New',monospace;font-size:0.8rem;cursor:pointer;white-space:nowrap}
-    .btn-gold{background:#e8a24a;border-color:#e8a24a;color:#0f0f0f;font-weight:700}
-    .btn-full{width:100%;padding:0.8rem;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;border:1px solid #e8a24a;border-radius:4px;background:#e8a24a;color:#0f0f0f;font-family:'Courier New',monospace;cursor:pointer;font-weight:700}
-    .btn-gray-full{width:100%;padding:0.8rem;font-size:0.85rem;border:1px solid #444;border-radius:4px;background:transparent;color:#aaa;font-family:'Courier New',monospace;cursor:pointer}
-    .btn-sm{padding:0.3rem 0.6rem;border:1px solid #333;border-radius:3px;background:transparent;color:#777;font-family:'Courier New',monospace;font-size:0.72rem;cursor:pointer}
-    .hint{font-size:0.72rem;color:#555;line-height:1.55;margin-top:0.3rem}
-    .divider{height:1px;background:#222;margin:1.1rem 0}
-    .tag-wrap{display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.6rem}
-    .tag{background:#222;border:1px solid #333;border-radius:3px;padding:0.25rem 0.55rem;font-size:0.75rem;display:inline-flex;align-items:center;gap:0.3rem;color:#bbb}
-    .tag button{background:none;border:none;cursor:pointer;color:#555;font-size:0.9rem;padding:0;line-height:1}
-    .msg-box{background:#111;border:1px solid #2e2e2e;border-radius:4px;padding:0.9rem 1.1rem;font-size:0.8rem;line-height:1.75;white-space:pre-wrap;color:#ccc;max-height:220px;overflow-y:auto;word-break:break-word}
-    .share-box{background:#111;border:1px solid #2e2e2e;border-radius:4px;padding:0.65rem 0.9rem;font-size:0.75rem;color:#777;word-break:break-all;line-height:1.5}
+    input,select{width:100%;padding:0.55rem 0.75rem;background:#111;border:1px solid #3d3d3d;border-radius:4px;color:#ffffff;font-family:'Courier New',monospace;font-size:0.88rem;outline:none}
+    input:focus,select:focus{border-color:#f5b358}
+    select option{background:#181818;color:#ffffff}
+    .slot-row{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:0.5rem;align-items:end;margin-bottom:0.65rem}
+    .btn{padding:0.5rem 1rem;border:1px solid #555;border-radius:4px;background:transparent;color:#f0ebe0;font-family:'Courier New',monospace;font-size:0.8rem;cursor:pointer;white-space:nowrap}
+    .btn-gold{background:#f5b358;border-color:#f5b358;color:#0f0f0f;font-weight:700}
+    .btn-full{width:100%;padding:0.85rem;font-size:0.88rem;letter-spacing:0.1em;text-transform:uppercase;border:1px solid #f5b358;border-radius:4px;background:#f5b358;color:#0f0f0f;font-family:'Courier New',monospace;cursor:pointer;font-weight:700}
+    .btn-gray-full{width:100%;padding:0.8rem;font-size:0.85rem;border:1px solid #555;border-radius:4px;background:transparent;color:#d4cfc7;font-family:'Courier New',monospace;cursor:pointer}
+    .btn-sm{padding:0.35rem 0.65rem;border:1px solid #444;border-radius:3px;background:transparent;color:#b8b4ac;font-family:'Courier New',monospace;font-size:0.75rem;cursor:pointer}
+    .btn-sm:hover{color:#ffffff;border-color:#777}
+    .hint{font-size:0.78rem;color:#a8a39a;line-height:1.55;margin-top:0.3rem}
+    .divider{height:1px;background:#2a2a2a;margin:1.1rem 0}
+    .tag-wrap{display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.6rem}
+    .tag{background:#242424;border:1px solid #3d3d3d;border-radius:3px;padding:0.3rem 0.6rem;font-size:0.78rem;display:inline-flex;align-items:center;gap:0.4rem;color:#e8e4dc}
+    .tag button{background:none;border:none;cursor:pointer;color:#a8a39a;font-size:0.95rem;padding:0;line-height:1}
+    .tag button:hover{color:#ffffff}
+    .msg-box{background:#111;border:1px solid #333;border-radius:4px;padding:0.9rem 1.1rem;font-size:0.82rem;line-height:1.75;white-space:pre-wrap;color:#e8e4dc;max-height:220px;overflow-y:auto;word-break:break-word}
+    .share-box{background:#111;border:1px solid #333;border-radius:4px;padding:0.75rem 0.9rem;font-size:0.78rem;color:#c2beba;word-break:break-all;line-height:1.5}
     .btn-row{display:flex;gap:0.55rem;flex-wrap:wrap;margin-top:0.75rem}
     .poll-header{text-align:center;margin-bottom:1.8rem;padding-top:1rem}
-    .poll-header h2{font-family:Georgia,serif;font-size:clamp(1.5rem,5vw,2.2rem);color:#f0ebe0}
-    .poll-header p{color:#666;font-size:0.8rem;margin-top:0.4rem}
-    .slot-opt{background:#141414;border:1.5px solid #2a2a2a;border-radius:5px;padding:0.85rem 1rem;margin-bottom:0.65rem;cursor:pointer;display:flex;align-items:center;gap:0.9rem}
-    .slot-opt.selected{background:#1e1a12;border-color:#e8a24a}
-    .slot-chk{width:1.2rem;height:1.2rem;border:1.5px solid #444;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem}
-    .slot-opt.selected .slot-chk{background:#e8a24a;border-color:#e8a24a;color:#0f0f0f}
-    .slot-date{font-size:0.92rem;color:#e8e4dc}
-    .slot-time{font-size:0.75rem;color:#666;margin-top:0.12rem}
-    .success-box{background:#0d2b12;border:1px solid #2d6335;border-radius:5px;padding:1.2rem 1.4rem;text-align:center}
-    .success-box h3{font-family:Georgia,serif;color:#5bba6f;font-size:1.1rem;margin-bottom:0.4rem}
-    .success-box p{font-size:0.8rem;color:#888;line-height:1.6}
-    .error-box{background:#2b0d0d;border:1px solid #633;border-radius:5px;padding:0.8rem 1rem;font-size:0.8rem;color:#e07070;margin-top:0.6rem}
-    .spinner{display:inline-block;width:1rem;height:1rem;border:2px solid #333;border-top-color:#e8a24a;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:0.4rem}
+    .poll-header h2{font-family:Georgia,serif;font-size:clamp(1.5rem,5vw,2.2rem);color:#ffffff}
+    .poll-header p{color:#a8a39a;font-size:0.85rem;margin-top:0.4rem}
+    .slot-opt{background:#141414;border:1.5px solid #333333;border-radius:5px;padding:0.9rem 1.1rem;margin-bottom:0.75rem;cursor:pointer;display:flex;align-items:center;gap:0.9rem;transition:border-color 0.15s ease}
+    .slot-opt.selected{background:#201c14;border-color:#f5b358}
+    .slot-chk{width:1.3rem;height:1.3rem;border:1.5px solid #555;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:bold}
+    .slot-opt.selected .slot-chk{background:#f5b358;border-color:#f5b358;color:#0f0f0f}
+    .slot-date{font-size:0.95rem;color:#ffffff;font-weight:600}
+    .slot-time{font-size:0.82rem;color:#a8a39a;margin-top:0.2rem}
+    .tz-badge{font-size:0.7rem;background:#242424;border:1px solid #3d3d3d;padding:0.15rem 0.4rem;border-radius:3px;color:#d4cfc7;margin-left:0.3rem}
+    .success-box{background:#0d2b12;border:1px solid #397a44;border-radius:5px;padding:1.3rem 1.4rem;text-align:center}
+    .success-box h3{font-family:Georgia,serif;color:#6fcf83;font-size:1.2rem;margin-bottom:0.4rem}
+    .success-box p{font-size:0.85rem;color:#d4cfc7;line-height:1.6}
+    .error-box{background:#2b0d0d;border:1px solid #7a3333;border-radius:5px;padding:0.8rem 1rem;font-size:0.82rem;color:#f08888;margin-top:0.6rem}
+    .spinner{display:inline-block;width:1rem;height:1rem;border:2px solid #444;border-top-color:#f5b358;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:0.4rem}
     @keyframes spin{to{transform:rotate(360deg)}}
-    input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.6)}
+    input[type=date]::-webkit-calendar-picker-indicator, input[type=time]::-webkit-calendar-picker-indicator{filter:invert(0.85)}
     a{text-decoration:none}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem}
     .grid3{display:grid;grid-template-columns:1fr 1fr auto;gap:0.5rem;align-items:end}
@@ -63,17 +66,32 @@ const SHEET_URL = "https://script.google.com/macros/s/AKfycbwTsq_gQLXtVlZPJaajfk
 const DAYS   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
+function getLocalTzAbbr() {
+  try {
+    const dtf = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' });
+    const parts = dtf.formatToParts(new Date());
+    const tzPart = parts.find(p => p.type === 'timeZoneName');
+    return tzPart ? tzPart.value : Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch (e) {
+    return "";
+  }
+}
+
+const LOCAL_TZ = getLocalTzAbbr();
+
 function fmtTime(t){
   if(!t) return "";
   const [h,m]=t.split(":").map(Number);
   const ampm=h>=12?"pm":"am",hr=h%12||12;
   return m===0?`${hr}${ampm}`:`${hr}:${String(m).padStart(2,"0")}${ampm}`;
 }
+
 function fmtDate(s){
   if(!s) return "";
   const d=new Date(s+"T12:00:00");
   return `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`;
 }
+
 function todayStr(){ return new Date().toISOString().split("T")[0]; }
 function uid(){ return Math.random().toString(36).slice(2,8); }
 function encodeEvent(ev){ try{return btoa(unescape(encodeURIComponent(JSON.stringify(ev))))}catch{return""} }
@@ -120,7 +138,7 @@ function showCreate(){
       <input id="ev-notes" type="text" placeholder="e.g. Zoom, ~2 hrs"/>
     </div>
     <div class="card">
-      <div class="card-title"><span class="num">2</span> Time options</div>
+      <div class="card-title"><span class="num">2</span> Time options <span class="tz-badge">${LOCAL_TZ}</span></div>
       <div id="slots-list"></div>
       <button class="btn-sm" onclick="addSlot()">+ Add slot</button>
     </div>
@@ -194,6 +212,7 @@ function generateEvent(){
     notes:(qs("#ev-notes")||{}).value?.trim()||"",
     organizer:(qs("#organizer")||{}).value?.trim()||"",
     orgEmail:(qs("#org-email")||{}).value?.trim()||"",
+    timezone:LOCAL_TZ,
     slots:state.slots, invitees:state.invitees, responses:[]
   };
   showShare(ev);
@@ -205,9 +224,10 @@ function showShare(ev){
   const pollUrl=`${base}#poll=${encoded}`;
   const typeLabel={virtual:"virtual","in-person":"in-person",either:"virtual or in-person"}[ev.type]||"virtual";
   const from=ev.organizer||"Me";
-  const smsMsg=`Hey! ${from} is planning a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""}.\n\nVote for your available times (30 sec, no account needed):\n${pollUrl}`;
+  const tzLabel=ev.timezone?` (${ev.timezone})`:"";
+  const smsMsg=`Hey! ${from} is planning a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""}.\n\nVote for your available times${tzLabel} (30 sec, no account needed):\n${pollUrl}`;
   const emailSubject=`When works for you? – ${ev.name}`;
-  const emailBody=`Hi${ev.invitees.length>0?" "+ev.invitees.map(i=>i.name).join(", "):""},\n\nI'm organizing a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""} and want to find a time that works for everyone.\n\nClick below to vote — takes 30 seconds, no account needed:\n\n${pollUrl}\n\nThanks!\n${from}${ev.orgEmail?"\n"+ev.orgEmail:""}`;
+  const emailBody=`Hi${ev.invitees.length>0?" "+ev.invitees.map(i=>i.name).join(", "):""},\n\nI'm organizing a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""} and want to find a time that works for everyone.\n\nTimes are shown in ${ev.timezone||"local time"}.\n\nClick below to vote — takes 30 seconds, no account needed:\n\n${pollUrl}\n\nThanks!\n${from}${ev.orgEmail?"\n"+ev.orgEmail:""}`;
   const emailAddresses=ev.invitees.map(i=>i.email).filter(Boolean).join(",");
   const mailtoLink=`mailto:${emailAddresses}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
   const smsLink=`sms:?&body=${encodeURIComponent(smsMsg)}`;
@@ -220,7 +240,7 @@ function showShare(ev){
       <div class="share-box" id="poll-url">${pollUrl}</div>
       <div class="btn-row">
         <button class="btn btn-gold" onclick="copyText('poll-url','cp-link')">Copy link</button>
-        <span id="cp-link" style="font-size:0.78rem;color:#5bba6f;display:none">✓ Copied!</span>
+        <span id="cp-link" style="font-size:0.78rem;color:#6fcf83;display:none">✓ Copied!</span>
       </div>
     </div>
     <div class="card">
@@ -230,7 +250,7 @@ function showShare(ev){
       <div class="btn-row">
         <button class="btn btn-gold" onclick="copyText('sms-msg','cp-sms')">Copy text</button>
         <a href="${smsLink}"><button class="btn">Open in Messages</button></a>
-        <span id="cp-sms" style="font-size:0.78rem;color:#5bba6f;display:none">✓ Copied!</span>
+        <span id="cp-sms" style="font-size:0.78rem;color:#6fcf83;display:none">✓ Copied!</span>
       </div>
     </div>
     <div class="card">
@@ -240,7 +260,7 @@ function showShare(ev){
       <div class="btn-row">
         <button class="btn btn-gold" onclick="copyText('email-msg','cp-email')">Copy email</button>
         <a href="${mailtoLink}"><button class="btn">Open in Mail app</button></a>
-        <span id="cp-email" style="font-size:0.78rem;color:#5bba6f;display:none">✓ Copied!</span>
+        <span id="cp-email" style="font-size:0.78rem;color:#6fcf83;display:none">✓ Copied!</span>
       </div>
     </div>
     <div class="card">
@@ -260,19 +280,21 @@ function showPoll(){
   const pd=state.pollData;
   if(!pd) return;
   state.selected=[];
+  const tzStr = pd.timezone ? ` (${pd.timezone})` : (LOCAL_TZ ? ` (${LOCAL_TZ})` : '');
+  
   render(`
     <div class="poll-header">
       <h2>${pd.name}</h2>
       <p>${pd.organizer?`Organized by ${pd.organizer} · `:""}${({virtual:"Virtual","in-person":"In person",either:"Virtual or in-person"}[pd.type])||""}${pd.notes?` · ${pd.notes}`:""}</p>
     </div>
     <div class="card">
-      <div class="card-title">Which times work for you?</div>
+      <div class="card-title">Which times work for you? <span class="tz-badge">${pd.timezone || LOCAL_TZ}</span></div>
       ${pd.slots.map(s=>`
         <div class="slot-opt" id="opt-${s.id}" onclick="toggleSlot('${s.id}')">
           <div class="slot-chk" id="chk-${s.id}"></div>
           <div style="flex:1">
             <div class="slot-date">${fmtDate(s.date)}</div>
-            <div class="slot-time">${fmtTime(s.start)} – ${fmtTime(s.end)}</div>
+            <div class="slot-time">${fmtTime(s.start)} – ${fmtTime(s.end)}${tzStr}</div>
           </div>
         </div>
       `).join("")}
@@ -304,9 +326,10 @@ async function submitPoll(){
   if(!state.selected.length){alert("Select at least one time.");return;}
   const btn=qs("#submit-btn");
   if(btn){btn.innerHTML='<span class="spinner"></span>Saving…';btn.disabled=true;}
+  const tzStr = pd.timezone ? ` ${pd.timezone}` : '';
   const slotLabels=state.selected.map(id=>{
     const s=pd.slots.find(sl=>sl.id===id);
-    return s?`${fmtDate(s.date)} ${fmtTime(s.start)}–${fmtTime(s.end)}`:id;
+    return s?`${fmtDate(s.date)} ${fmtTime(s.start)}–${fmtTime(s.end)}${tzStr}`:id;
   });
   try{
     await fetch(SHEET_URL,{
