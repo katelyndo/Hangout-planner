@@ -278,9 +278,11 @@ function renderShareCard(ev, pollUrl, isLoading) {
   const typeLabel={virtual:"virtual","in-person":"in-person",either:"virtual or in-person"}[ev.type]||"virtual";
   const from=ev.organizer||"Me";
   const tzLabel=ev.timezone?` (${ev.timezone})`:"";
-  const smsMsg=`Hey! ${from} is planning a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""}.\n\nVote for your available times${tzLabel} (30 sec, no account needed):\n${pollUrl}`;
+  const redirectNotice="(This will take you to the tinyurl page; please wait for the tool to load or click \"Continue to Your Destination\").";
+  
+  const smsMsg=`Hey! ${from} is planning a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""}.\n\nVote for your available times${tzLabel} (30 sec, no account needed):\n${pollUrl}\n\n${redirectNotice}`;
   const emailSubject=`When works for you? – ${ev.name}`;
-  const emailBody=`Hi${ev.invitees.length>0?" "+ev.invitees.map(i=>i.name).join(", "):""},\n\nI'm organizing a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""} and want to find a time that works for everyone.\n\nTimes are shown in ${ev.timezone||"local time"}.\n\nClick below to vote — takes 30 seconds, no account needed:\n\n${pollUrl}\n\nThanks!\n${from}${ev.orgEmail?"\n"+ev.orgEmail:""}`;
+  const emailBody=`Hi${ev.invitees.length>0?" "+ev.invitees.map(i=>i.name).join(", "):""},\n\nI'm organizing a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""} and want to find a time that works for everyone.\n\nTimes are shown in ${ev.timezone||"local time"}.\n\nClick below to vote — takes 30 seconds, no account needed:\n\n${pollUrl}\n\n${redirectNotice}\n\nThanks!\n${from}${ev.orgEmail?"\n"+ev.orgEmail:""}`;
   const emailAddresses=ev.invitees.map(i=>i.email).filter(Boolean).join(",");
   const mailtoLink=`mailto:${emailAddresses}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
   const smsLink=`sms:?&body=${encodeURIComponent(smsMsg)}`;
