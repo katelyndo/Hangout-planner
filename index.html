@@ -50,7 +50,7 @@
     .success-box h3{font-family:Georgia,serif;color:#6fcf83;font-size:1.2rem;margin-bottom:0.4rem}
     .success-box p{font-size:0.85rem;color:#d4cfc7;line-height:1.6}
     .error-box{background:#2b0d0d;border:1px solid #7a3333;border-radius:5px;padding:0.8rem 1rem;font-size:0.82rem;color:#f08888;margin-top:0.6rem}
-    .spinner{display:inline-block;width:1rem;height:1rem;border:2px solid #444;border-top-color:#f5b358;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:0.4rem}
+    .spinner{display:inline-block;width:0.9rem;height:0.9rem;border:2px solid #444;border-top-color:#f5b358;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:0.4rem}
     @keyframes spin{to{transform:rotate(360deg)}}
     input[type=date]::-webkit-calendar-picker-indicator, input[type=time]::-webkit-calendar-picker-indicator{filter:invert(0.85)}
     a{text-decoration:none}
@@ -94,8 +94,43 @@ function fmtDate(s){
 
 function todayStr(){ return new Date().toISOString().split("T")[0]; }
 function uid(){ return Math.random().toString(36).slice(2,8); }
-function encodeEvent(ev){ try{return btoa(unescape(encodeURIComponent(JSON.stringify(ev))))}catch{return""} }
-function decodeEvent(s){ try{return JSON.parse(decodeURIComponent(escape(atob(s))))}catch{return null} }
+
+function encodeEvent(ev) {
+  try {
+    const minSlots = ev.slots.map(s => [s.date, s.start, s.end]);
+    const minPayload = [
+      ev.name,
+      ev.type === "virtual" ? "v" : ev.type === "in-person" ? "p" : "e",
+      ev.notes || "",
+      ev.organizer || "",
+      ev.orgEmail || "",
+      ev.timezone || "",
+      minSlots
+    ];
+    return btoa(unescape(encodeURIComponent(JSON.stringify(minPayload))));
+  } catch(e) { return ""; }
+}
+
+function decodeEvent(s) {
+  try {
+    const raw = JSON.parse(decodeURIComponent(escape(atob(s))));
+    if (Array.isArray(raw)) {
+      const [name, typeCode, notes, organizer, orgEmail, timezone, minSlots] = raw;
+      return {
+        name,
+        type: typeCode === "v" ? "virtual" : typeCode === "p" ? "in-person" : "either",
+        notes,
+        organizer,
+        orgEmail,
+        timezone,
+        slots: minSlots.map(s => ({ id: uid(), date: s[0], start: s[1], end: s[2] })),
+        invitees: []
+      };
+    }
+    return raw;
+  } catch(e) { return null; }
+}
+
 function qs(sel){ return document.querySelector(sel); }
 function render(html){ qs("#app").innerHTML=html; }
 
@@ -218,10 +253,28 @@ function generateEvent(){
   showShare(ev);
 }
 
-function showShare(ev){
-  const encoded=encodeEvent(ev);
-  const base=window.location.href.split("#")[0];
-  const pollUrl=`${base}#poll=${encoded}`;
+async function showShare(ev){
+  const encoded = encodeEvent(ev);
+  const base = window.location.href.split("#")[0];
+  let pollUrl = `${base}#poll=${encoded}`;
+
+  renderShareCard(ev, pollUrl, true);
+
+  try {
+    const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(pollUrl)}`);
+    if (res.ok) {
+      const shortUrl = await res.text();
+      if (shortUrl && shortUrl.startsWith("http")) {
+        pollUrl = shortUrl;
+        renderShareCard(ev, pollUrl, false);
+      }
+    }
+  } catch (err) {
+    renderShareCard(ev, pollUrl, false);
+  }
+}
+
+function renderShareCard(ev, pollUrl, isLoading) {
   const typeLabel={virtual:"virtual","in-person":"in-person",either:"virtual or in-person"}[ev.type]||"virtual";
   const from=ev.organizer||"Me";
   const tzLabel=ev.timezone?` (${ev.timezone})`:"";
@@ -237,7 +290,7 @@ function showShare(ev){
     <div class="card">
       <div class="card-title">🔗 Your poll link</div>
       <p class="hint" style="margin-bottom:0.6rem">Share this with your group. Anyone who opens it can vote — no account needed.</p>
-      <div class="share-box" id="poll-url">${pollUrl}</div>
+      <div class="share-box" id="poll-url">${isLoading ? '<span class="spinner"></span> Shortening link…' : pollUrl}</div>
       <div class="btn-row">
         <button class="btn btn-gold" onclick="copyText('poll-url','cp-link')">Copy link</button>
         <span id="cp-link" style="font-size:0.78rem;color:#6fcf83;display:none">✓ Copied!</span>
