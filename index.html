@@ -4,6 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hangout Planner</title>
+  <!-- LZ-String library for ultra-compact URL hashes -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{background:#0f0f0f;color:#f0ebe0;font-family:'Courier New',monospace;min-height:100vh;padding:2rem 1rem 4rem}
@@ -44,7 +46,8 @@
     .slot-chk{width:1.3rem;height:1.3rem;border:1.5px solid #555;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:bold}
     .slot-opt.selected .slot-chk{background:#f5b358;border-color:#f5b358;color:#0f0f0f}
     .slot-date{font-size:0.95rem;color:#ffffff;font-weight:600}
-    .slot-time{font-size:0.82rem;color:#a8a39a;margin-top:0.2rem}
+    .slot-time{font-size:0.85rem;color:#f0ebe0;margin-top:0.25rem}
+    .slot-orig{font-size:0.74rem;color:#88847c;margin-top:0.15rem}
     .tz-badge{font-size:0.7rem;background:#242424;border:1px solid #3d3d3d;padding:0.15rem 0.4rem;border-radius:3px;color:#d4cfc7;margin-left:0.3rem}
     .success-box{background:#0d2b12;border:1px solid #397a44;border-radius:5px;padding:1.3rem 1.4rem;text-align:center}
     .success-box h3{font-family:Georgia,serif;color:#6fcf83;font-size:1.2rem;margin-bottom:0.4rem}
@@ -63,33 +66,67 @@
 <script>
 const SHEET_URL = "https://script.google.com/macros/s/AKfycbwTsq_gQLXtVlZPJaajfk9bScQscfq8fXeok2li5UME1uLFinmgpO7RjQ4UPiC3a2bE/exec";
 
-const DAYS   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const LOCAL_IANA_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Denver";
 
-function getLocalTzAbbr() {
+function getTzAbbr(ianaTz, dateObj = new Date()) {
   try {
-    const dtf = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' });
-    const parts = dtf.formatToParts(new Date());
+    const dtf = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short', timeZone: ianaTz });
+    const parts = dtf.formatToParts(dateObj);
     const tzPart = parts.find(p => p.type === 'timeZoneName');
-    return tzPart ? tzPart.value : Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return tzPart ? tzPart.value : ianaTz;
   } catch (e) {
-    return "";
+    return ianaTz;
   }
 }
 
-const LOCAL_TZ = getLocalTzAbbr();
-
-function fmtTime(t){
-  if(!t) return "";
-  const [h,m]=t.split(":").map(Number);
-  const ampm=h>=12?"pm":"am",hr=h%12||12;
-  return m===0?`${hr}${ampm}`:`${hr}:${String(m).padStart(2,"0")}${ampm}`;
+function parseIsoSlotToDate(dateStr, timeStr, sourceIanaTz) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const [h, min] = timeStr.split(":").map(Number);
+  const tempUtc = new Date(Date.UTC(y, m - 1, d, h, min, 0));
+  
+  const invTzFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: sourceIanaTz,
+    year: 'numeric', month: 'numeric', day: 'numeric',
+    hour: 'numeric', minute: 'numeric', second: 'numeric',
+    hour12: false
+  });
+  
+  const parts = invTzFormatter.formatToParts(tempUtc);
+  const p = {};
+  parts.forEach(({ type, value }) => { p[type] = parseInt(value, 10); });
+  if (p.hour === 24) p.hour = 0;
+  
+  const targetTimeInSourceTz = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
+  const tzOffsetMs = targetTimeInSourceTz - tempUtc.getTime();
+  return new Date(tempUtc.getTime() - tzOffsetMs);
 }
 
-function fmtDate(s){
-  if(!s) return "";
-  const d=new Date(s+"T12:00:00");
-  return `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`;
+function formatSlotDisplay(dateStr, startStr, endStr, orgIanaTz) {
+  const startDate = parseIsoSlotToDate(dateStr, startStr, orgIanaTz);
+  const endDate = parseIsoSlotToDate(dateStr, endStr, orgIanaTz);
+  
+  const userTz = LOCAL_IANA_TZ;
+  const userAbbr = getTzAbbr(userTz, startDate);
+  const orgAbbr = getTzAbbr(orgIanaTz, startDate);
+  const isDifferentTz = userTz !== orgIanaTz;
+  
+  const dateFmt = new Intl.DateTimeFormat('en-US', {
+    weekday: 'short', month: 'short', day: 'numeric', timeZone: userTz
+  });
+  const timeFmt = new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric', minute: 'numeric', hour12: true, timeZone: userTz
+  });
+  
+  const orgTimeFmt = new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric', minute: 'numeric', hour12: true, timeZone: orgIanaTz
+  });
+
+  return {
+    localDate: dateFmt.format(startDate),
+    localTime: `${timeFmt.format(startDate)} – ${timeFmt.format(endDate)} (${userAbbr})`,
+    orgTimeNotice: isDifferentTz ? `${orgTimeFmt.format(startDate)} – ${orgTimeFmt.format(endDate)} ${orgAbbr}` : null,
+    fullLabel: `${dateFmt.format(startDate)}: ${timeFmt.format(startDate)} – ${timeFmt.format(endDate)} (${userAbbr})`
+  };
 }
 
 function todayStr(){ return new Date().toISOString().split("T")[0]; }
@@ -104,16 +141,20 @@ function encodeEvent(ev) {
       ev.notes || "",
       ev.organizer || "",
       ev.orgEmail || "",
-      ev.timezone || "",
+      ev.timezone || LOCAL_IANA_TZ,
       minSlots
     ];
-    return btoa(unescape(encodeURIComponent(JSON.stringify(minPayload))));
+    return LZString.compressToEncodedURIComponent(JSON.stringify(minPayload));
   } catch(e) { return ""; }
 }
 
 function decodeEvent(s) {
   try {
-    const raw = JSON.parse(decodeURIComponent(escape(atob(s))));
+    let rawStr = LZString.decompressFromEncodedURIComponent(s);
+    if (!rawStr) {
+      rawStr = decodeURIComponent(escape(atob(s))); // Fallback for legacy Base64 URLs
+    }
+    const raw = JSON.parse(rawStr);
     if (Array.isArray(raw)) {
       const [name, typeCode, notes, organizer, orgEmail, timezone, minSlots] = raw;
       return {
@@ -122,8 +163,8 @@ function decodeEvent(s) {
         notes,
         organizer,
         orgEmail,
-        timezone,
-        slots: minSlots.map(s => ({ id: uid(), date: s[0], start: s[1], end: s[2] })),
+        timezone: timezone || "America/Denver",
+        slots: minSlots.map(slot => ({ id: uid(), date: slot[0], start: slot[1], end: slot[2] })),
         invitees: []
       };
     }
@@ -154,15 +195,16 @@ function route(){
 }
 
 function showCreate(){
+  const localAbbr = getTzAbbr(LOCAL_IANA_TZ);
   render(`
     <div class="logo">
       <h1>Hangout <em>Planner</em></h1>
-      <p>No accounts · No subscriptions</p>
+      <p>No accounts · Direct links · Auto time zones</p>
     </div>
     <div class="card">
       <div class="card-title"><span class="num">1</span> Event details</div>
       <label>Event name</label>
-      <input id="ev-name" type="text" placeholder="e.g. Friday game night"/>
+      <input id="ev-name" type="text" placeholder="e.g. Project check-in or Game night"/>
       <label>Format</label>
       <select id="ev-type">
         <option value="virtual">Virtual</option>
@@ -170,10 +212,11 @@ function showCreate(){
         <option value="either">Either works</option>
       </select>
       <label>Notes (optional)</label>
-      <input id="ev-notes" type="text" placeholder="e.g. Zoom, ~2 hrs"/>
+      <input id="ev-notes" type="text" placeholder="e.g. Google Meet, ~1 hr"/>
     </div>
     <div class="card">
-      <div class="card-title"><span class="num">2</span> Time options <span class="tz-badge">${LOCAL_TZ}</span></div>
+      <div class="card-title"><span class="num">2</span> Time options <span class="tz-badge">${localAbbr}</span></div>
+      <p class="hint" style="margin-bottom:0.8rem">Times will automatically convert to your invitees' local time zones when they open the link.</p>
       <div id="slots-list"></div>
       <button class="btn-sm" onclick="addSlot()">+ Add slot</button>
     </div>
@@ -193,7 +236,7 @@ function showCreate(){
       <div class="tag-wrap" id="invitees-list"></div>
     </div>
     <div class="card">
-      <button class="btn-full" onclick="generateEvent()">Generate shareable link →</button>
+      <button class="btn-full" onclick="generateEvent()">Generate direct link →</button>
     </div>
   `);
   renderSlots();
@@ -247,52 +290,33 @@ function generateEvent(){
     notes:(qs("#ev-notes")||{}).value?.trim()||"",
     organizer:(qs("#organizer")||{}).value?.trim()||"",
     orgEmail:(qs("#org-email")||{}).value?.trim()||"",
-    timezone:LOCAL_TZ,
+    timezone:LOCAL_IANA_TZ,
     slots:state.slots, invitees:state.invitees, responses:[]
   };
   showShare(ev);
 }
 
-async function showShare(ev){
-  const encoded = encodeEvent(ev);
+function showShare(ev){
+  const compressedHash = encodeEvent(ev);
   const base = window.location.href.split("#")[0];
-  let pollUrl = `${base}#poll=${encoded}`;
-
-  renderShareCard(ev, pollUrl, true);
-
-  try {
-    const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(pollUrl)}`);
-    if (res.ok) {
-      const shortUrl = await res.text();
-      if (shortUrl && shortUrl.startsWith("http")) {
-        pollUrl = shortUrl;
-        renderShareCard(ev, pollUrl, false);
-      }
-    }
-  } catch (err) {
-    renderShareCard(ev, pollUrl, false);
-  }
-}
-
-function renderShareCard(ev, pollUrl, isLoading) {
-  const typeLabel={virtual:"virtual","in-person":"in-person",either:"virtual or in-person"}[ev.type]||"virtual";
-  const from=ev.organizer||"Me";
-  const tzLabel=ev.timezone?` (${ev.timezone})`:"";
-  const redirectNotice="(This will take you to the tinyurl page; please wait for the tool to load or click \"Continue to Your Destination\").";
+  const pollUrl = `${base}#poll=${compressedHash}`;
+  const orgAbbr = getTzAbbr(ev.timezone);
+  const typeLabel = {virtual:"virtual","in-person":"in-person",either:"virtual or in-person"}[ev.type]||"virtual";
+  const from = ev.organizer || "Me";
   
-  const smsMsg=`Hey! ${from} is planning a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""}.\n\nVote for your available times${tzLabel} (30 sec, no account needed):\n${pollUrl}\n\n${redirectNotice}`;
-  const emailSubject=`When works for you? – ${ev.name}`;
-  const emailBody=`Hi${ev.invitees.length>0?" "+ev.invitees.map(i=>i.name).join(", "):""},\n\nI'm organizing a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""} and want to find a time that works for everyone.\n\nTimes are shown in ${ev.timezone||"local time"}.\n\nClick below to vote — takes 30 seconds, no account needed:\n\n${pollUrl}\n\n${redirectNotice}\n\nThanks!\n${from}${ev.orgEmail?"\n"+ev.orgEmail:""}`;
-  const emailAddresses=ev.invitees.map(i=>i.email).filter(Boolean).join(",");
-  const mailtoLink=`mailto:${emailAddresses}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-  const smsLink=`sms:?&body=${encodeURIComponent(smsMsg)}`;
+  const smsMsg = `Hey! ${from} is planning a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""}.\n\nVote for your available times (auto-adjusts to your local time):\n${pollUrl}`;
+  const emailSubject = `When works for you? – ${ev.name}`;
+  const emailBody = `Hi${ev.invitees.length>0?" "+ev.invitees.map(i=>i.name).join(", "):""},\n\nI'm organizing a ${typeLabel} ${ev.name}${ev.notes?` (${ev.notes})`:""} and want to find a time that works for everyone.\n\nTimes automatically convert to your local time zone.\n\nClick below to vote (takes 30 seconds, no login required):\n\n${pollUrl}\n\nThanks!\n${from}${ev.orgEmail?"\n"+ev.orgEmail:""}`;
+  const emailAddresses = ev.invitees.map(i=>i.email).filter(Boolean).join(",");
+  const mailtoLink = `mailto:${emailAddresses}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+  const smsLink = `sms:?&body=${encodeURIComponent(smsMsg)}`;
 
   render(`
     <div class="logo"><h1>Hangout <em>Planner</em></h1></div>
     <div class="card">
-      <div class="card-title">🔗 Your poll link</div>
-      <p class="hint" style="margin-bottom:0.6rem">Share this with your group. Anyone who opens it can vote — no account needed.</p>
-      <div class="share-box" id="poll-url">${isLoading ? '<span class="spinner"></span> Shortening link…' : pollUrl}</div>
+      <div class="card-title">🔗 Direct poll link</div>
+      <p class="hint" style="margin-bottom:0.6rem">No third-party redirects. Anyone opening this link will see times converted to their local device time.</p>
+      <div class="share-box" id="poll-url">${pollUrl}</div>
       <div class="btn-row">
         <button class="btn btn-gold" onclick="copyText('poll-url','cp-link')">Copy link</button>
         <span id="cp-link" style="font-size:0.78rem;color:#6fcf83;display:none">✓ Copied!</span>
@@ -300,7 +324,7 @@ function renderShareCard(ev, pollUrl, isLoading) {
     </div>
     <div class="card">
       <div class="card-title">💬 Text message</div>
-      <p class="hint" style="margin-bottom:0.6rem">Paste into your group chat or send individually.</p>
+      <p class="hint" style="margin-bottom:0.6rem">Paste into your group chat or send directly.</p>
       <div class="msg-box" id="sms-msg">${smsMsg}</div>
       <div class="btn-row">
         <button class="btn btn-gold" onclick="copyText('sms-msg','cp-sms')">Copy text</button>
@@ -332,10 +356,13 @@ function copyText(srcId,confirmId){
 }
 
 function showPoll(){
-  const pd=state.pollData;
-  if(!pd) return;
-  state.selected=[];
-  const tzStr = pd.timezone ? ` (${pd.timezone})` : (LOCAL_TZ ? ` (${LOCAL_TZ})` : '');
+  const pd = state.pollData;
+  if (!pd) return;
+  state.selected = [];
+  
+  const userAbbr = getTzAbbr(LOCAL_IANA_TZ);
+  const orgAbbr = getTzAbbr(pd.timezone);
+  const isDifferent = LOCAL_IANA_TZ !== pd.timezone;
   
   render(`
     <div class="poll-header">
@@ -343,16 +370,25 @@ function showPoll(){
       <p>${pd.organizer?`Organized by ${pd.organizer} · `:""}${({virtual:"Virtual","in-person":"In person",either:"Virtual or in-person"}[pd.type])||""}${pd.notes?` · ${pd.notes}`:""}</p>
     </div>
     <div class="card">
-      <div class="card-title">Which times work for you? <span class="tz-badge">${pd.timezone || LOCAL_TZ}</span></div>
-      ${pd.slots.map(s=>`
-        <div class="slot-opt" id="opt-${s.id}" onclick="toggleSlot('${s.id}')">
-          <div class="slot-chk" id="chk-${s.id}"></div>
-          <div style="flex:1">
-            <div class="slot-date">${fmtDate(s.date)}</div>
-            <div class="slot-time">${fmtTime(s.start)} – ${fmtTime(s.end)}${tzStr}</div>
+      <div class="card-title">
+        Which times work for you? 
+        <span class="tz-badge">${userAbbr} (Your Time)</span>
+      </div>
+      ${isDifferent ? `<p class="hint" style="margin-bottom:0.9rem">⚡ Times have been automatically converted from the organizer's time zone (${orgAbbr}).</p>` : ''}
+      
+      ${pd.slots.map(s => {
+        const display = formatSlotDisplay(s.date, s.start, s.end, pd.timezone);
+        return `
+          <div class="slot-opt" id="opt-${s.id}" onclick="toggleSlot('${s.id}')">
+            <div class="slot-chk" id="chk-${s.id}"></div>
+            <div style="flex:1">
+              <div class="slot-date">${display.localDate}</div>
+              <div class="slot-time">${display.localTime}</div>
+              ${display.orgTimeNotice ? `<div class="slot-orig">Organizer's time: ${display.orgTimeNotice}</div>` : ''}
+            </div>
           </div>
-        </div>
-      `).join("")}
+        `;
+      }).join("")}
     </div>
     <div class="card">
       <label>Your name</label>
@@ -381,11 +417,14 @@ async function submitPoll(){
   if(!state.selected.length){alert("Select at least one time.");return;}
   const btn=qs("#submit-btn");
   if(btn){btn.innerHTML='<span class="spinner"></span>Saving…';btn.disabled=true;}
-  const tzStr = pd.timezone ? ` ${pd.timezone}` : '';
-  const slotLabels=state.selected.map(id=>{
-    const s=pd.slots.find(sl=>sl.id===id);
-    return s?`${fmtDate(s.date)} ${fmtTime(s.start)}–${fmtTime(s.end)}${tzStr}`:id;
+  
+  const slotLabels = state.selected.map(id => {
+    const s = pd.slots.find(sl => sl.id === id);
+    if (!s) return id;
+    const disp = formatSlotDisplay(s.date, s.start, s.end, pd.timezone);
+    return disp.fullLabel;
   });
+  
   try{
     await fetch(SHEET_URL,{
       method:"POST",
